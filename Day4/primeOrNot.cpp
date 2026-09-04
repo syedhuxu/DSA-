@@ -29,7 +29,7 @@ bool isPrime(int n)
 
 int main()
 {
-    char result = isPrime(7);
+    bool result = isPrime(8);
     cout << result;
     return 0;
 }
