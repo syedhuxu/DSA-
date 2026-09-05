@@ -18,7 +18,6 @@ int main()
 {
 
     int result = binToDec(101101);
-    cout << (1 / 10);
     cout << result;
     return 0;
 }
