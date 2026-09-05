@@ -19,7 +19,8 @@ int main()
 
 {
     int result = decToBinary(8);
-    cout << result;
+    cout << result << endl;
+    cout << 1 / 2;
 
     return 0;
 }
