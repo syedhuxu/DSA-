@@ -3,7 +3,7 @@
 #include <algorithm>
 using namespace std;
 
-int printSmallestAndLargest(int arr[], int sz)
+void printSmallestAndLargest(int arr[], int sz)
 {
     int smallest = INT_MAX;
     int largest = INT_MIN;
