@@ -13,6 +13,7 @@ int main()
     cout << cap << endl;
 
     vec1.pop_back();
+
     int frnt = vec1.front();
     cout << frnt << endl;
 
