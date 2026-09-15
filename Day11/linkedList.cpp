@@ -1,9 +1,30 @@
 #include <iostream>
 using namespace std;
 
-int main()
+class Node
 {
+    int data;
+    Node *next;
+    Node(int val)
+    {
+        data = val;
+        next = NULL;
+    }
+};
+class List
+{
+    Node *head;
+    Node *tail;
 
+public:
+    List()
+    {
+        head = tail = NULL;
+    }
+};
+
+main()
+{
     cout << "Hello World";
     return 0;
 }
