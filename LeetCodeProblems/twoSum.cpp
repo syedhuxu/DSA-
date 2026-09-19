@@ -25,7 +25,10 @@ int main()
 
     vector<int> result = twoSum(nums, target);
 
-    cout << result[0] << " " << result[1];
+    for (int val : result)
+    {
+        cout << val << " ";
+    }
 
     return 0;
 }
