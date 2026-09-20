@@ -17,6 +17,7 @@ void findHightestAndLowest(int arr[], int sz)
 {
     int smallest = INT_MAX;
     int largest = INT_MIN;
+
     for (int i = 0; i < sz; i++)
     {
         smallest = min(arr[i], smallest);
