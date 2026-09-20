@@ -109,10 +109,10 @@ public:
         while (temp != NULL)
 
         {
-            cout << temp->data << "-->";
+            cout << temp->data << " ";
             temp = temp->next;
         }
-        cout << "NULL" << endl;
+        cout << " " << endl;
     }
 };
 int main()
@@ -121,12 +121,24 @@ int main()
     ll.push_Front(3);
     ll.push_Front(2);
     ll.push_Front(1);
+    cout << "Pushed some elements at front" << endl;
+    ll.print_LL();
 
     ll.push_Back(4);
+    ll.push_Back(5);
+    ll.push_Back(6);
+    cout << "Pushed some elements at back" << endl;
+    ll.print_LL();
 
     ll.pop_Front();
-    ll.pop_Back();
+    cout << "poped an elements from front" << endl;
+    ll.print_LL();
 
+    ll.pop_Back();
+    cout << "poped an elements from back" << endl;
+    ll.print_LL();
+
+    cout << "Final LinkedList after operations" << endl;
     ll.print_LL();
 
     return 0;
