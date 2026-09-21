@@ -152,29 +152,60 @@ public:
         while (temp != NULL)
 
         {
-            cout << temp->data << "-->";
+            cout << temp->data << " ";
             temp = temp->next;
         }
-        cout << "NULL" << endl;
+        cout << endl;
     }
 };
 int main()
 {
     List ll;
+
+    cout << "Created An Empty LinkedList: " << endl
+         << endl;
+
     ll.push_Front(3);
     ll.push_Front(2);
     ll.push_Front(1);
+    cout << "Pushed some elements at front: " << endl;
+    ll.print_LL();
+    cout << endl
+         << endl;
 
     ll.push_Back(4);
+    ll.push_Back(5);
+    ll.push_Back(6);
+    cout << "Pushed some elements at back: " << endl;
+    ll.print_LL();
+    cout << endl
+         << endl;
 
-    ll.insert(5, 4);
+    ll.pop_Front();
+    cout << "poped an elements from front: " << endl;
+    ll.print_LL();
+    cout << endl
+         << endl;
 
-    int result = ll.search(1);
-    cout << result << endl;
+    ll.pop_Back();
+    cout << "poped an elements from back:" << endl;
+    ll.print_LL();
+    cout << endl
+         << endl;
 
-    // ll.pop_Front();
-    // ll.pop_Back();
+    cout << "Inserted an element at position 2" << endl;
+    ll.insert(9, 2);
+    ll.print_LL();
+    cout << endl
+         << endl;
 
+    int result = ll.search(9);
+    cout << "Searching an element: 9" << endl;
+    cout << "The element You are searching for is at position: " << result << endl;
+    cout << endl
+         << endl;
+
+    cout << "Final LinkedList After All Operations: " << endl;
     ll.print_LL();
 
     return 0;
