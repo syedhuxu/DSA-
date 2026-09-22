@@ -29,6 +29,28 @@ vector<int> converBinary(int n)
     return resultedNums;
 }
 
+void countZerosAndOnes(vector<int> &nums)
+{
+
+    int zeroCount = 0;
+    int oneCount = 0;
+
+    for (int val : nums)
+    {
+        if (val == 0)
+        {
+            zeroCount++;
+        }
+        else
+        {
+            oneCount++;
+        }
+    }
+
+    cout << "Total Zeroes: " << zeroCount << endl;
+    cout << "Total Ones: " << oneCount << endl;
+}
+
 int main()
 {
     int num;
@@ -42,5 +64,22 @@ int main()
         cout << bit;
     }
     cout << endl;
+
+    countZerosAndOnes(nums);
+
+    if (num & 1 == 1)
+    {
+        cout << "Number is Odd " << endl;
+    }
+    else
+    {
+        cout << "Number is Even " << endl;
+    }
+
+    if (num > 0 && (num & (num - 1)) == 0)
+        cout << "Power of 2";
+    else
+        cout << "Not a power of 2";
+
     return 0;
 }
