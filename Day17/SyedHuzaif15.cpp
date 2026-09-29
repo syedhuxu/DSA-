@@ -8,6 +8,7 @@ public:
     Node *next;
     Node *prev;
 
+    // Constructor: naya node banta hai aur starting me links NULL hote hain
     Node(int val)
     {
         data = val;
@@ -22,67 +23,73 @@ class List
     Node *tail;
 
 public:
-    // Constructor
+    // Starting me list empty hai
     List()
     {
         head = tail = NULL;
     }
 
-    // Insert at beginning
+    // Node ko beginning me add karna
     void push_Front(int val)
     {
         Node *newNode = new Node(val);
 
-        // Empty list
+        // Agar list empty hai to ye first node hoga
         if (head == NULL)
         {
             head = tail = newNode;
             return;
         }
 
+        // Naye node ko purane head se connect karo
         newNode->next = head;
         head->prev = newNode;
+
+        // Ab new node hi head hai
         head = newNode;
     }
 
-    // Insert at end
+    // Node ko end me add karna
     void push_Back(int val)
     {
         Node *newNode = new Node(val);
 
-        // Empty list
+        // Empty list me new node head aur tail dono hoga
         if (head == NULL)
         {
             head = tail = newNode;
             return;
         }
 
+        // Naye node ka previous tail hoga
         newNode->prev = tail;
         tail->next = newNode;
+
+        // Ab new node hi tail hai
         tail = newNode;
     }
 
-    // Insert at specified position
-    // Positions are 0-based
+    // Given position par node insert karna
+    // Position 0-based hai
     void insert(int val, int pos)
     {
-        // Negative position
+        // Negative position valid nahi hai
         if (pos < 0)
         {
             cout << "Invalid Position" << endl;
             return;
         }
 
-        // Insert at beginning
+        // Position 0 means beginning
         if (pos == 0)
         {
             push_Front(val);
             return;
         }
 
-        // Find the node at position pos - 1
         Node *temp = head;
 
+        // Insertion ke liye pos - 1 wali position tak jana hai
         for (int i = 0; i < pos - 1; i++)
         {
             if (temp == NULL)
@@ -94,14 +101,14 @@ public:
             temp = temp->next;
         }
 
-        // Position is invalid
+        // Agar required position exist hi nahi karti
         if (temp == NULL)
         {
             cout << "Invalid Position" << endl;
             return;
         }
 
-        // Insert at the end
+        // Agar tail ke baad insert karna hai to push_Back use karo
         if (temp == tail)
         {
             push_Back(val);
@@ -110,7 +117,7 @@ public:
 
         Node *newNode = new Node(val);
 
-        // Connect new node in both directions
+        // New node ko dono directions me connect karna hai
         newNode->next = temp->next;
         newNode->prev = temp;
 
@@ -118,7 +125,7 @@ public:
         temp->next = newNode;
     }
 
-    // Display in forward direction
+    // List ko head se tail tak display karna
     void print_Forward()
     {
         if (head == NULL)
@@ -138,7 +145,7 @@ public:
         cout << endl;
     }
 
-    // Display in backward direction
+    // List ko tail se head tak display karna
     void print_Backward()
     {
         if (tail == NULL)
@@ -158,16 +165,17 @@ public:
         cout << endl;
     }
 
-    // Delete from beginning
+    // Beginning se node delete karna
     void pop_Front()
     {
+        // Empty list se delete nahi kar sakte
         if (head == NULL)
         {
             cout << "Doubly LinkedList is empty" << endl;
             return;
         }
 
-        // Only one node
+        // Agar sirf ek node hai
         if (head == tail)
         {
             delete head;
@@ -177,23 +185,28 @@ public:
 
         Node *temp = head;
 
+        // Head ko next node par shift karo
         head = head->next;
+
+        // Naye head ka previous NULL hoga
         head->prev = NULL;
 
+        // Purane node ko delete karo
         temp->next = NULL;
         delete temp;
     }
 
-    // Delete from end
+    // End se node delete karna
     void pop_Back()
     {
+        // Empty list check
         if (head == NULL)
         {
             cout << "Doubly LinkedList is empty" << endl;
             return;
         }
 
-        // Only one node
+        // Agar sirf ek hi node hai
         if (head == tail)
         {
             delete tail;
@@ -203,32 +216,36 @@ public:
 
         Node *temp = tail;
 
+        // Tail ko previous node par shift karo
         tail = tail->prev;
+
+        // Naye tail ka next NULL hoga
         tail->next = NULL;
 
+        // Purane tail ko delete karo
         temp->prev = NULL;
         delete temp;
     }
 
-    // Delete from specified position
-    // Positions are 0-based
+    // Given position ka node delete karna
+    // Position 0-based hai
     void delete_Position(int pos)
     {
-        // Empty list
+        // Empty list se deletion possible nahi hai
         if (head == NULL)
         {
             cout << "Doubly LinkedList is empty" << endl;
             return;
         }
 
-        // Invalid negative position
+        // Negative position valid nahi hai
         if (pos < 0)
         {
             cout << "Invalid Position" << endl;
             return;
         }
 
-        // Delete first node
+        // Position 0 par first node delete hoga
         if (pos == 0)
         {
             pop_Front();
@@ -237,7 +254,7 @@ public:
 
         Node *temp = head;
 
-        // Move to required position
+        // Required position tak move karo
         for (int i = 0; i < pos; i++)
         {
             if (temp == NULL)
@@ -249,30 +266,29 @@ public:
             temp = temp->next;
         }
 
-        // Position does not exist
+        // Agar position list me exist nahi karti
         if (temp == NULL)
         {
             cout << "Invalid Position" << endl;
             return;
         }
 
-        // Delete last node
+        // Agar last node delete karna hai
         if (temp == tail)
         {
             pop_Back();
             return;
         }
 
-        // Connect previous node to next node
+        // Previous aur next node ko aapas me connect karo
         temp->prev->next = temp->next;
-
-        // Connect next node to previous node
         temp->next->prev = temp->prev;
 
+        // Ab current node ko delete kar sakte hain
         delete temp;
     }
 
-    // Search for an element
+    // Element ko search karke uski first position return karna
     int search(int key)
     {
         Node *temp = head;
@@ -289,22 +305,23 @@ public:
             pos++;
         }
 
+        // Element nahi mila
         return -1;
     }
 
-    // Count total number of nodes
+    // Total nodes count karna
     int count()
     {
-        int count = 0;
+        int total = 0;
         Node *temp = head;
 
         while (temp != NULL)
         {
-            count++;
+            total++;
             temp = temp->next;
         }
 
-        return count;
+        return total;
     }
 };
 
@@ -312,14 +329,16 @@ int main()
 {
     List dll;
 
-    // EMPTY DOUBLY LINKED LIST
+    //  EMPTY LIST
 
     cout << "Created an Empty Doubly LinkedList:" << endl;
     dll.print_Forward();
+    cout << "Total nodes in empty list: " << dll.count() << endl;
     cout << endl;
 
-    // INSERTION
+    //  INSERTION
 
+    // Empty list me elements add karna
     dll.push_Back(10);
     dll.push_Back(20);
     dll.push_Back(30);
@@ -334,7 +353,7 @@ int main()
 
     cout << endl;
 
-    // Insert at beginning
+    // Beginning me element insert karna
     dll.push_Front(5);
 
     cout << "After inserting 5 at beginning:" << endl;
@@ -347,7 +366,7 @@ int main()
 
     cout << endl;
 
-    // Insert at specified position
+    // Specified position par element insert karna
     dll.insert(15, 2);
 
     cout << "After inserting 15 at position 2:" << endl;
@@ -360,7 +379,7 @@ int main()
 
     cout << endl;
 
-    // Insert at end
+    // End me element insert karna
     dll.push_Back(40);
 
     cout << "After inserting 40 at end:" << endl;
@@ -373,15 +392,15 @@ int main()
 
     cout << endl;
 
-    // Invalid insertion
+    // Invalid position par insertion try karna
     cout << "Trying to insert 100 at invalid position 20:" << endl;
     dll.insert(100, 20);
 
     cout << endl;
 
-    // DELETION
+    //  DELETION
 
-    // Delete from beginning
+    // Beginning se delete karna
     dll.pop_Front();
 
     cout << "After deleting from beginning:" << endl;
@@ -394,7 +413,7 @@ int main()
 
     cout << endl;
 
-    // Delete from specified position
+    // Specified position se delete karna
     dll.delete_Position(2);
 
     cout << "After deleting node from position 2:" << endl;
@@ -407,7 +426,7 @@ int main()
 
     cout << endl;
 
-    // Delete from end
+    // End se delete karna
     dll.pop_Back();
 
     cout << "After deleting from end:" << endl;
@@ -420,17 +439,18 @@ int main()
 
     cout << endl;
 
-    // Invalid deletion
+    // Invalid position se delete try karna
     cout << "Trying to delete from invalid position 20:" << endl;
     dll.delete_Position(20);
 
     cout << endl;
 
-    // SEARCH
+    //  SEARCH
 
-    int result = dll.search(20);
+    // List me present element search karna
+    int result = dll.search(15);
 
-    cout << "Searching for element 20:" << endl;
+    cout << "Searching for element 15:" << endl;
 
     if (result != -1)
     {
@@ -443,7 +463,7 @@ int main()
 
     cout << endl;
 
-    // Search for element that doesn't exist
+    // List me present nahi hone wala element search karna
     result = dll.search(100);
 
     cout << "Searching for element 100:" << endl;
@@ -459,9 +479,38 @@ int main()
 
     cout << endl;
 
-    // COUNT
+    //  COUNT
 
-    cout << "Total number of nodes: " << dll.count() << endl;
+    cout << "Total number of nodes in non-empty list: ";
+    cout << dll.count() << endl;
+
+    cout << endl;
+
+    //  ONLY NODE CASE
+
+    // List ko sirf ek node tak le aate hain
+    while (dll.count() > 1)
+    {
+        dll.pop_Front();
+    }
+
+    cout << "List before deleting the only remaining node:" << endl;
+    dll.print_Forward();
+
+    // Only node delete karna
+    dll.pop_Front();
+
+    cout << "List after deleting the only node:" << endl;
+    dll.print_Forward();
+
+    cout << "Total nodes: " << dll.count() << endl;
+
+    cout << endl;
+
+    //  EMPTY LIST DELETION
+
+    cout << "Trying to delete from an empty list:" << endl;
+    dll.pop_Front();
 
     return 0;
 }
