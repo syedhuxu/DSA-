@@ -1,61 +1,59 @@
 
 #include <iostream>
+#include <vector>
 using namespace std;
 
-// Merge two sorted halves
-void merge(int arr[], int left, int mid, int right)
+// Merge two sorted parts of the vector
+void merge(vector<int> &arr, int left, int mid, int right)
 {
-    int n1 = mid - left + 1;
-    int n2 = right - mid;
+    vector<int> temp;
 
-    int L[n1], R[n2];
+    int i = left;
+    int j = mid + 1;
 
-    // Copy data into temporary arrays
-    for (int i = 0; i < n1; i++)
-        L[i] = arr[left + i];
-
-    for (int j = 0; j < n2; j++)
-        R[j] = arr[mid + 1 + j];
-
-    int i = 0, j = 0, k = left;
-
-    // Compare and merge elements
-    while (i < n1 && j < n2)
+    // Compare elements from both halves
+    while (i <= mid && j <= right)
     {
-        if (L[i] <= R[j])
+        if (arr[i] <= arr[j])
         {
-            arr[k] = L[i];
+            temp.push_back(arr[i]);
             i++;
         }
         else
         {
-            arr[k] = R[j];
+            temp.push_back(arr[j]);
             j++;
         }
-        k++;
     }
 
-    // Copy remaining elements
-    while (i < n1)
+    // Copy remaining elements from the left half
+    while (i <= mid)
     {
-        arr[k] = L[i];
+        temp.push_back(arr[i]);
         i++;
-        k++;
     }
 
-    while (j < n2)
+    // Copy remaining elements from the right half
+    while (j <= right)
     {
-        arr[k] = R[j];
+        temp.push_back(arr[j]);
         j++;
-        k++;
+    }
+
+    // Copy sorted elements back into the original vector
+    for (int k = 0; k < temp.size(); k++)
+    {
+        arr[left + k] = temp[k];
     }
 }
 
-// Divide the array recursively
-void mergeSort(int arr[], int left, int right)
+// Divide the vector and sort each half
+void mergeSort(vector<int> &arr, int left, int right)
 {
     if (left >= right)
+    {
         return;
+    }
 
     int mid = left + (right - left) / 2;
 
@@ -67,18 +65,27 @@ void mergeSort(int arr[], int left, int right)
 
 int main()
 {
-    int arr[] = {38, 27, 43, 3, 9, 82, 10};
-    int n = sizeof(arr) / sizeof(arr[0]);
+    int n;
+    cout << "Enter the number of elements: ";
+    cin >> n;
 
-    cout << "Original array: ";
+    vector<int> arr(n);
+
+    cout << "Enter the elements: ";
     for (int i = 0; i < n; i++)
-        cout << arr[i] << " ";
+    {
+        cin >> arr[i];
+    }
 
     mergeSort(arr, 0, n - 1);
 
-    cout << "\nSorted array: ";
+    cout << "Sorted vector: ";
     for (int i = 0; i < n; i++)
+    {
         cout << arr[i] << " ";
+    }
+
+    cout << endl;
 
     return 0;
 }
