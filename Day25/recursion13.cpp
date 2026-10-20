@@ -10,8 +10,8 @@ void fun(int n)
     }
 
     cout << n << " ";
-    fun(n - 2);
-    fun(n - 1);
+    fun(n - 2); // 3 1
+    fun(n - 1); // 2 1
 }
 
 int main()

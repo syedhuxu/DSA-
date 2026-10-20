@@ -17,6 +17,7 @@ void fun(int n)
         cout << n * 2 << " ";
     }
 }
+// 4 3 2 1 4 8
 
 int main()
 {
