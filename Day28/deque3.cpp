@@ -50,7 +50,7 @@ public:
 
         arr[front] = key;
         size++;
-        cout << key << " Insertion successfull.\n";
+        cout << key << " Insertion at front successfull.\n";
     }
 
     void insertRear(int key)
@@ -73,14 +73,14 @@ public:
 
         arr[rear] = key;
         size++;
-        cout << key << " rear se insert hua.\n";
+        cout << key << " Insertion at rear successfull\n";
     }
 
     void display()
     {
         if (isEmpty())
         {
-            cout << "Deque khali hai.\n";
+            cout << "Deque empty.\n";
             return;
         }
 

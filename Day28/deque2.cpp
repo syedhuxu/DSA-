@@ -51,7 +51,7 @@ public:
 
             front = newNode;
         }
-        cout << val << "Insertion at front successfull\n";
+        cout << val << " Insertion at front successfull. \n";
     }
 
     void insertRear(int val)
@@ -71,7 +71,7 @@ public:
 
             rear = newNode;
         }
-        cout << val << "Insertion at rear successufll.\n";
+        cout << val << " Insertion at rear successufll. \n";
     }
 
     void display()
