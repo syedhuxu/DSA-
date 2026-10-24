@@ -63,7 +63,6 @@ void searchNode(int key)
     }
 }
 
-// --- 3. TRAVERSAL OPERATIONS (Exam k liye bhot zaroori) ---
 
 // Preorder: ROOT -> LEFT -> RIGHT
 void preorder(int index)
