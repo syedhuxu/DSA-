@@ -54,6 +54,7 @@ public:
 
     bool isEmpty()
     {
+
         return top == -1;
     }
 
@@ -71,11 +72,29 @@ int main()
 {
     Stack myStack(5);
 
+    if (myStack.isEmpty())
+    {
+        cout << "Stack is empty" << endl;
+    }
+    else
+    {
+        cout << "Stack is !empty" << endl;
+    }
+
     myStack.push(10);
     myStack.push(20);
     myStack.push(30);
     myStack.push(40);
     myStack.push(50);
+
+    if (myStack.isEmpty())
+    {
+        cout << "Stack is empty" << endl;
+    }
+    else
+    {
+        cout << "Stack is !empty" << endl;
+    }
 
     myStack.display();
 
