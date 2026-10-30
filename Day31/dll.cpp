@@ -212,6 +212,7 @@ int main()
     // l1.display();
 
     l1.deleteAtPos(10);
+    l1.deleteAtBeginning();
     // l1.display();
     return 0;
 }
