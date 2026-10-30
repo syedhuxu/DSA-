@@ -1,0 +1,1560 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Interactive AVL Tree Step-by-Step Visualizer & Rotation Lab</title>
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+        background-color: #0f172a;
+        color: #f8fafc;
+      }
+      .mono {
+        font-family: "JetBrains Mono", monospace;
+      }
+      .node-group {
+        transition:
+          transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+          opacity 0.35s ease;
+      }
+      .edge-line {
+        transition: all 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+      }
+      @keyframes pulse-ring {
+        0% {
+          r: 24px;
+          opacity: 0.85;
+        }
+        100% {
+          r: 38px;
+          opacity: 0;
+        }
+      }
+      .pulse-circle {
+        animation: pulse-ring 1.5s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+      }
+      ::-webkit-scrollbar {
+        width: 6px;
+        height: 6px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #0f172a;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #334155;
+        border-radius: 9999px;
+      }
+    </style>
+  </head>
+  <body
+    class="min-h-screen flex flex-col selection:bg-indigo-500 selection:text-white"
+  >
+    <!-- Top Header -->
+    <header
+      class="border-b border-slate-800 bg-slate-900/90 backdrop-blur sticky top-0 z-30"
+    >
+      <div
+        class="max-w-7xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between gap-3"
+      >
+        <div class="flex items-center gap-3">
+          <div
+            class="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-indigo-500/20 font-bold text-white text-lg"
+          >
+            AVL
+          </div>
+          <div>
+            <h1
+              class="text-base sm:text-lg font-bold tracking-tight text-white flex items-center gap-2"
+            >
+              Interactive AVL Tree &amp; Rotation Lab
+              <span
+                class="hidden sm:inline-block text-xs font-medium px-2 py-0.5 rounded-full bg-indigo-500/15 text-indigo-300 border border-indigo-500/30"
+              >
+                BF = Height(Left) - Height(Right)
+              </span>
+            </h1>
+            <p class="text-xs text-slate-400">
+              Dataset:
+              <span class="mono text-slate-300"
+                >14, 17, 11, 7, 53, 4, 13, 12, 8, 60, 19, 16, 20</span
+              >
+            </p>
+          </div>
+        </div>
+
+        <!-- Mode / View Switcher -->
+        <div
+          class="flex items-center gap-1.5 bg-slate-800/90 p-1 rounded-xl border border-slate-700/70"
+        >
+          <button
+            id="tabBtnVisualizer"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow"
+          >
+            Interactive Tree Builder
+          </button>
+          <button
+            id="tabBtnGuide"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white"
+          >
+            4 Rotations Cheat Sheet
+          </button>
+          <button
+            id="tabBtnLog"
+            class="px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white"
+          >
+            Full 13-Step Walkthrough Table
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 py-4 flex flex-col gap-4">
+      <!-- VIEW 1: INTERACTIVE VISUALIZER -->
+      <section id="viewVisualizer" class="flex flex-col gap-4">
+        <!-- Queue Bar: Interactive "In Your Hands" Insertion Queue -->
+        <div
+          class="bg-slate-900 border border-slate-800 rounded-2xl p-3.5 shadow-xl"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-2.5">
+            <div class="flex items-center gap-2">
+              <span
+                class="text-xs font-bold uppercase tracking-wider text-indigo-400"
+                >Dataset Queue (Click Next Value or Step Button)</span
+              >
+              <span
+                id="progressBadge"
+                class="mono text-xs px-2 py-0.5 rounded-md bg-slate-800 text-slate-300 border border-slate-700"
+              >
+                0 / 13 Inserted
+              </span>
+            </div>
+            <div class="flex items-center gap-2">
+              <label
+                class="flex items-center gap-1.5 text-xs text-slate-300 cursor-pointer select-none bg-slate-800/80 px-2.5 py-1 rounded-lg border border-slate-700"
+              >
+                <input
+                  type="checkbox"
+                  id="chkPauseBeforeRotate"
+                  checked
+                  class="rounded accent-indigo-500"
+                />
+                <span>Pause on Imbalance Before Rotating</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Sequence Chips -->
+          <div
+            id="sequenceContainer"
+            class="flex flex-wrap items-center gap-1.5 mb-3"
+          ></div>
+
+          <!-- Action Controls Bar -->
+          <div
+            class="flex flex-wrap items-center justify-between gap-3 pt-2.5 border-t border-slate-800/80"
+          >
+            <div class="flex flex-wrap items-center gap-2">
+              <button
+                id="btnReset"
+                class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition flex items-center gap-1.5"
+              >
+                <span>⟲</span> Reset
+              </button>
+              <button
+                id="btnPrev"
+                class="px-3 py-2 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition disabled:opacity-40 disabled:pointer-events-none"
+              >
+                ← Prev Step
+              </button>
+              <button
+                id="btnNextPrimary"
+                class="px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white shadow-lg shadow-indigo-600/25 transition flex items-center gap-2"
+              >
+                <span id="btnNextPrimaryLabel">Insert First Node (14) →</span>
+              </button>
+              <button
+                id="btnAutoPlay"
+                class="px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 transition"
+              >
+                ▶ Auto-Play
+              </button>
+            </div>
+
+            <!-- Custom Node Input -->
+            <form id="customInsertForm" class="flex items-center gap-1.5">
+              <input
+                type="number"
+                id="customValInput"
+                placeholder="Custom #"
+                min="-999"
+                max="999"
+                class="w-24 px-2.5 py-1.5 rounded-xl text-xs bg-slate-950 border border-slate-700 text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 mono"
+              />
+              <button
+                type="submit"
+                class="px-3 py-1.5 rounded-xl text-xs font-semibold bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white border border-slate-700 transition"
+              >
+                + Insert Custom
+              </button>
+            </form>
+          </div>
+        </div>
+
+        <!-- Main Split Grid: Tree Canvas (Left) + Step Inspector & Rotation Breakdown (Right) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-4">
+          <!-- Tree Canvas Column -->
+          <div
+            class="lg:col-span-8 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col overflow-hidden shadow-xl"
+          >
+            <!-- Canvas Top Subbar -->
+            <div
+              class="px-4 py-2.5 border-b border-slate-800 flex flex-wrap items-center justify-between gap-2 bg-slate-900/60"
+            >
+              <div class="flex items-center gap-3 text-xs">
+                <span class="flex items-center gap-1.5 text-slate-300">
+                  <span
+                    class="w-3 h-3 rounded-full bg-emerald-500 inline-block"
+                  ></span>
+                  Balanced (BF ∈ {-1, 0, +1})
+                </span>
+                <span class="flex items-center gap-1.5 text-slate-300">
+                  <span
+                    class="w-3 h-3 rounded-full bg-amber-500 inline-block"
+                  ></span>
+                  Newly Inserted / Rotated
+                </span>
+                <span class="flex items-center gap-1.5 text-slate-300">
+                  <span
+                    class="w-3 h-3 rounded-full bg-rose-500 inline-block"
+                  ></span>
+                  Unbalanced (|BF| = 2)
+                </span>
+              </div>
+              <div class="flex items-center gap-2 text-xs text-slate-400 mono">
+                <span
+                  >Tree Height:
+                  <strong id="statTreeHeight" class="text-white"
+                    >0</strong
+                  ></span
+                >
+                <span>•</span>
+                <span
+                  >Nodes:
+                  <strong id="statNodeCount" class="text-white">0</strong></span
+                >
+              </div>
+            </div>
+
+            <!-- SVG Viewport -->
+            <div
+              class="relative flex-1 min-h-[390px] sm:min-h-[450px] bg-slate-950/60 flex items-center justify-center overflow-x-auto"
+            >
+              <svg
+                id="treeSvg"
+                viewBox="0 0 860 440"
+                class="w-full h-full max-h-[470px] select-none"
+              >
+                <defs>
+                  <filter
+                    id="glow-amber"
+                    x="-30%"
+                    y="-30%"
+                    width="160%"
+                    height="160%"
+                  >
+                    <feDropShadow
+                      dx="0"
+                      dy="0"
+                      stdDeviation="5"
+                      flood-color="#f59e0b"
+                      flood-opacity="0.65"
+                    />
+                  </filter>
+                  <filter
+                    id="glow-rose"
+                    x="-30%"
+                    y="-30%"
+                    width="160%"
+                    height="160%"
+                  >
+                    <feDropShadow
+                      dx="0"
+                      dy="0"
+                      stdDeviation="6"
+                      flood-color="#f43f5e"
+                      flood-opacity="0.85"
+                    />
+                  </filter>
+                  <filter
+                    id="glow-indigo"
+                    x="-30%"
+                    y="-30%"
+                    width="160%"
+                    height="160%"
+                  >
+                    <feDropShadow
+                      dx="0"
+                      dy="0"
+                      stdDeviation="5"
+                      flood-color="#6366f1"
+                      flood-opacity="0.65"
+                    />
+                  </filter>
+                </defs>
+                <g id="edgesLayer"></g>
+                <g id="nodesLayer"></g>
+              </svg>
+
+              <!-- Empty State Overlay -->
+              <div
+                id="emptyTreeOverlay"
+                class="absolute inset-0 flex flex-col items-center justify-center text-center p-6 pointer-events-none"
+              >
+                <div
+                  class="w-14 h-14 rounded-2xl bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-2xl mb-3"
+                >
+                  🌱
+                </div>
+                <p class="text-sm font-semibold text-slate-200">
+                  AVL Tree is Currently Empty
+                </p>
+                <p class="text-xs text-slate-400 max-w-sm mt-1">
+                  Click
+                  <span class="text-indigo-400 font-semibold"
+                    >"Insert First Node (14) →"</span
+                  >
+                  or click any number chip in the queue above to watch BST
+                  insertion, balance factor updates, and rotations step by step.
+                </p>
+              </div>
+            </div>
+
+            <!-- Traversals Footer -->
+            <div
+              class="px-4 py-2.5 bg-slate-900/90 border-t border-slate-800 grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs"
+            >
+              <div class="truncate">
+                <span class="text-slate-400 font-medium"
+                  >In-Order (Sorted BST):
+                </span>
+                <span id="txtInOrder" class="mono text-emerald-400">—</span>
+              </div>
+              <div class="truncate">
+                <span class="text-slate-400 font-medium"
+                  >Pre-Order (Structure):
+                </span>
+                <span id="txtPreOrder" class="mono text-indigo-300">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step Explanation & Rotation Mechanics Column -->
+          <div class="lg:col-span-4 flex flex-col gap-4">
+            <!-- Live Step Card -->
+            <div
+              class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex flex-col gap-3"
+            >
+              <div class="flex items-center justify-between gap-2">
+                <span
+                  id="stepPhasePill"
+                  class="text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30"
+                >
+                  Ready to Start
+                </span>
+                <span
+                  id="rotationTypeBadge"
+                  class="hidden mono text-xs font-bold px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40"
+                >
+                  LL Rotation
+                </span>
+              </div>
+
+              <h2 id="stepTitle" class="text-base font-bold text-white">
+                Step 0: Initial Empty Tree
+              </h2>
+
+              <div
+                id="stepDescription"
+                class="text-xs sm:text-sm text-slate-300 leading-relaxed space-y-2"
+              >
+                <p>
+                  An <strong>AVL Tree</strong> is a self-balancing Binary Search
+                  Tree where every node maintains a
+                  <strong>Balance Factor (BF)</strong>:
+                </p>
+                <div
+                  class="p-2.5 rounded-xl bg-slate-950 border border-slate-800 mono text-xs text-indigo-300"
+                >
+                  BF(node) = Height(Left) - Height(Right)
+                </div>
+                <p>
+                  If inserting a node causes any ancestor's
+                  <span class="mono text-rose-400">|BF| &gt; 1</span> (i.e.
+                  <span class="mono">+2</span> or <span class="mono">-2</span>),
+                  we rebalance the tree at the
+                  <strong>lowest unbalanced ancestor</strong> using one of 4
+                  rotations: <strong>LL, RR, LR, or RL</strong>.
+                </p>
+              </div>
+
+              <!-- Rotation Mini-Diagram Box (Shown whenever a rotation occurs or is pending) -->
+              <div
+                id="rotationMechanicBox"
+                class="hidden rounded-xl bg-slate-950 border border-slate-800 p-3 space-y-2"
+              >
+                <div class="flex items-center justify-between">
+                  <span
+                    class="text-xs font-bold text-amber-400 uppercase tracking-wider"
+                    id="rotBoxHeader"
+                    >Rotation Mechanics</span
+                  >
+                  <span
+                    class="mono text-[11px] text-slate-400"
+                    id="rotNodesInvolved"
+                    >z, y, x</span
+                  >
+                </div>
+                <div
+                  id="rotStepList"
+                  class="text-xs text-slate-300 space-y-1.5"
+                ></div>
+              </div>
+            </div>
+
+            <!-- Balance Factor Inspector Table for Current Nodes -->
+            <div
+              class="bg-slate-900 border border-slate-800 rounded-2xl p-4 shadow-xl flex-1 flex flex-col"
+            >
+              <h3
+                class="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2.5"
+              >
+                Live Node Balance Factors (BF = hL - hR)
+              </h3>
+              <div
+                class="overflow-y-auto max-h-56 rounded-xl border border-slate-800/90 bg-slate-950/50"
+              >
+                <table class="w-full text-left border-collapse text-xs">
+                  <thead>
+                    <tr
+                      class="border-b border-slate-800 text-slate-400 bg-slate-900/80"
+                    >
+                      <th class="py-1.5 px-2.5 font-semibold">Node</th>
+                      <th class="py-1.5 px-2 font-semibold">h(L)</th>
+                      <th class="py-1.5 px-2 font-semibold">h(R)</th>
+                      <th class="py-1.5 px-2 font-semibold">BF</th>
+                      <th class="py-1.5 px-2.5 font-semibold">Status</th>
+                    </tr>
+                  </thead>
+                  <tbody
+                    id="bfTableBody"
+                    class="divide-y divide-slate-800/60 mono"
+                  >
+                    <tr>
+                      <td
+                        colspan="5"
+                        class="py-4 text-center text-slate-500 font-sans"
+                      >
+                        Insert a node to inspect balance factors
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 2: 4 ROTATIONS CHEAT SHEET -->
+      <section id="viewGuide" class="hidden space-y-4">
+        <div
+          class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl"
+        >
+          <h2 class="text-lg font-bold text-white mb-1">
+            How AVL Tree Rotations Work (LL, RR, LR, RL)
+          </h2>
+          <p class="text-xs sm:text-sm text-slate-300 mb-4">
+            After standard BST insertion, we walk back up from the newly
+            inserted leaf toward the root, updating heights and checking
+            <span class="mono text-indigo-300"
+              >BF = Height(Left) - Height(Right)</span
+            >. Let <strong>z</strong> be the first (lowest) ancestor with
+            <span class="mono text-rose-400">|BF| = 2</span>,
+            <strong>y</strong> be the taller child of <strong>z</strong> along
+            the insertion path, and <strong>x</strong> be the grandchild along
+            the insertion path.
+          </p>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- LL Case -->
+            <div
+              class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-sky-500/20 text-sky-300 border border-sky-500/30"
+                  >1. Left-Left (LL) Case</span
+                >
+                <span class="mono text-xs text-slate-400"
+                  >BF(z) = +2, BF(y) ≥ 0</span
+                >
+              </div>
+              <p class="text-xs text-slate-300">
+                <strong>Cause:</strong> Insertion occurred in the
+                <strong>left subtree</strong> of the
+                <strong>left child</strong> of <span class="mono">z</span>.
+              </p>
+              <p class="text-xs text-emerald-400 font-semibold">
+                Fix: Single Right Rotation around z.
+              </p>
+              <pre
+                class="mono text-[11px] bg-slate-900/90 p-3 rounded-lg text-slate-200 overflow-x-auto border border-slate-800"
+              >
+      z (+2)                           y (0)
+     /                                /     \
+    y (+1)    == Right Rotate(z) ==> x       z (0)
+   /
+  x (new)     (Occurs in dataset at: Insert 7 &amp; Insert 4)</pre
+              >
+            </div>
+
+            <!-- RR Case -->
+            <div
+              class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30"
+                  >2. Right-Right (RR) Case</span
+                >
+                <span class="mono text-xs text-slate-400"
+                  >BF(z) = -2, BF(y) ≤ 0</span
+                >
+              </div>
+              <p class="text-xs text-slate-300">
+                <strong>Cause:</strong> Insertion occurred in the
+                <strong>right subtree</strong> of the
+                <strong>right child</strong> of <span class="mono">z</span>.
+              </p>
+              <p class="text-xs text-emerald-400 font-semibold">
+                Fix: Single Left Rotation around z.
+              </p>
+              <pre
+                class="mono text-[11px] bg-slate-900/90 p-3 rounded-lg text-slate-200 overflow-x-auto border border-slate-800"
+              >
+  z (-2)                                 y (0)
+   \                                    /     \
+    y (-1)    == Left Rotate(z) ==>    z (0)   x
+     \
+      x (new) (Occurs in dataset at: Insert 60 &amp; Insert 20)</pre
+              >
+            </div>
+
+            <!-- LR Case -->
+            <div
+              class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-amber-500/20 text-amber-300 border border-amber-500/30"
+                  >3. Left-Right (LR) Case</span
+                >
+                <span class="mono text-xs text-slate-400"
+                  >BF(z) = +2, BF(y) = -1</span
+                >
+              </div>
+              <p class="text-xs text-slate-300">
+                <strong>Cause:</strong> Insertion occurred in the
+                <strong>right subtree</strong> of the
+                <strong>left child</strong> of
+                <span class="mono">z</span> (zig-zag path).
+              </p>
+              <p class="text-xs text-emerald-400 font-semibold">
+                Fix: Left Rotate(y), then Right Rotate(z).
+              </p>
+              <pre
+                class="mono text-[11px] bg-slate-900/90 p-3 rounded-lg text-slate-200 overflow-x-auto border border-slate-800"
+              >
+    z (+2)             z (+2)               x (0)
+   /                  /                    /     \
+  y (-1)  =Left(y)=> x (+1)  =Right(z)=>  y (0)   z (0)
+   \                /
+    x              y         (Occurs in dataset at: Insert 8 &amp; Insert 16)</pre
+              >
+            </div>
+
+            <!-- RL Case -->
+            <div
+              class="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2"
+            >
+              <div class="flex items-center justify-between">
+                <span
+                  class="px-2.5 py-0.5 rounded-full text-xs font-bold bg-rose-500/20 text-rose-300 border border-rose-500/30"
+                  >4. Right-Left (RL) Case</span
+                >
+                <span class="mono text-xs text-slate-400"
+                  >BF(z) = -2, BF(y) = +1</span
+                >
+              </div>
+              <p class="text-xs text-slate-300">
+                <strong>Cause:</strong> Insertion occurred in the
+                <strong>left subtree</strong> of the
+                <strong>right child</strong> of
+                <span class="mono">z</span> (zig-zag path).
+              </p>
+              <p class="text-xs text-emerald-400 font-semibold">
+                Fix: Right Rotate(y), then Left Rotate(z).
+              </p>
+              <pre
+                class="mono text-[11px] bg-slate-900/90 p-3 rounded-lg text-slate-200 overflow-x-auto border border-slate-800"
+              >
+  z (-2)             z (-2)                  x (0)
+   \                  \                     /     \
+    y (+1) =Right(y)=> x (-1) =Left(z)=>   z (0)   y (0)
+   /                    \
+  x                      y   (Occurs in dataset at: Insert 12 &amp; Insert 19)</pre
+              >
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VIEW 3: FULL 13-STEP WALKTHROUGH TABLE -->
+      <section id="viewLog" class="hidden space-y-4">
+        <div
+          class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl"
+        >
+          <div class="flex flex-wrap items-center justify-between gap-2 mb-4">
+            <div>
+              <h2 class="text-lg font-bold text-white">
+                Complete 13-Element Insertion &amp; Rotation Summary
+              </h2>
+              <p class="text-xs text-slate-400">
+                Click any row's "Jump to Step" button to inspect that exact tree
+                state on the interactive canvas.
+              </p>
+            </div>
+          </div>
+          <div class="overflow-x-auto rounded-xl border border-slate-800">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr
+                  class="bg-slate-950 text-slate-300 border-b border-slate-800"
+                >
+                  <th class="py-2.5 px-3 font-semibold">#</th>
+                  <th class="py-2.5 px-3 font-semibold">Insert</th>
+                  <th class="py-2.5 px-3 font-semibold">BST Placement</th>
+                  <th class="py-2.5 px-3 font-semibold">Imbalance Check</th>
+                  <th class="py-2.5 px-3 font-semibold">Rotation Performed</th>
+                  <th class="py-2.5 px-3 font-semibold">Root After</th>
+                  <th class="py-2.5 px-3 font-semibold text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody
+                id="summaryTableBody"
+                class="divide-y divide-slate-800/70 bg-slate-900/40"
+              ></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <script>
+      // =========================================================================
+      // 1. DATASET & AVL ENGINE WITH RECORDED SNAPSHOTS (BEFORE & AFTER ROTATION)
+      // =========================================================================
+      const INITIAL_DATASET = [14, 17, 11, 7, 53, 4, 13, 12, 8, 60, 19, 16, 20];
+
+      function cloneTree(node) {
+        if (!node) return null;
+        return {
+          val: node.val,
+          height: node.height,
+          bf: node.bf,
+          left: cloneTree(node.left),
+          right: cloneTree(node.right),
+        };
+      }
+
+      function getHeight(node) {
+        return node ? node.height : 0;
+      }
+
+      function updateMetrics(node) {
+        if (!node) return;
+        updateMetrics(node.left);
+        updateMetrics(node.right);
+        const hl = getHeight(node.left);
+        const hr = getHeight(node.right);
+        node.height = 1 + Math.max(hl, hr);
+        node.bf = hl - hr;
+      }
+
+      // Standard BST Insert without balancing (to capture pre-rotation state)
+      function bstInsertRaw(root, val, path = []) {
+        if (!root) {
+          return {
+            node: { val, height: 1, bf: 0, left: null, right: null },
+            parentVal: path[path.length - 1] || null,
+            side: null,
+          };
+        }
+        path.push(root.val);
+        if (val < root.val) {
+          if (!root.left) {
+            root.left = { val, height: 1, bf: 0, left: null, right: null };
+            return { parentVal: root.val, side: "left" };
+          }
+          return bstInsertRaw(root.left, val, path);
+        } else if (val > root.val) {
+          if (!root.right) {
+            root.right = { val, height: 1, bf: 0, left: null, right: null };
+            return { parentVal: root.val, side: "right" };
+          }
+          return bstInsertRaw(root.right, val, path);
+        }
+        return { duplicate: true };
+      }
+
+      function rotateRight(z) {
+        const y = z.left;
+        const T3 = y.right;
+        y.right = z;
+        z.left = T3;
+        updateMetrics(z);
+        updateMetrics(y);
+        return y;
+      }
+
+      function rotateLeft(z) {
+        const y = z.right;
+        const T2 = y.left;
+        y.left = z;
+        z.right = T2;
+        updateMetrics(z);
+        updateMetrics(y);
+        return y;
+      }
+
+      // Find lowest unbalanced ancestor along path to inserted value and balance it
+      function balanceTreeWithTrace(root, insertedVal) {
+        let rotationInfo = null;
+
+        function helper(node) {
+          if (!node) return null;
+          if (insertedVal < node.val) {
+            node.left = helper(node.left);
+          } else if (insertedVal > node.val) {
+            node.right = helper(node.right);
+          }
+
+          updateMetrics(node);
+
+          if (!rotationInfo && Math.abs(node.bf) > 1) {
+            const zVal = node.val;
+            // Left heavy (+2)
+            if (node.bf > 1 && insertedVal < node.left.val) {
+              const yVal = node.left.val;
+              const xVal = node.left.left.val;
+              rotationInfo = {
+                type: "LL (Left-Left)",
+                shortType: "LL Rotation",
+                z: zVal,
+                y: yVal,
+                x: xVal,
+                zBf: "+2",
+                yBf: "+" + node.left.bf,
+                newSubtreeRoot: yVal,
+                steps: [
+                  `Lowest unbalanced ancestor is <strong>${zVal}</strong> (BF = +2) and its left child <strong>${yVal}</strong> has BF = +1 (Left-Left heavy).`,
+                  `Perform a <strong>Single Right Rotation</strong> around node <strong>${zVal}</strong>.`,
+                  `Node <strong>${yVal}</strong> moves up to replace <strong>${zVal}</strong>; <strong>${zVal}</strong> becomes the right child of <strong>${yVal}</strong> (and any right child of ${yVal} becomes ${zVal}'s left child).`,
+                ],
+              };
+              return rotateRight(node);
+            }
+
+            // Right heavy (-2)
+            if (node.bf < -1 && insertedVal > node.right.val) {
+              const yVal = node.right.val;
+              const xVal = node.right.right.val;
+              rotationInfo = {
+                type: "RR (Right-Right)",
+                shortType: "RR Rotation",
+                z: zVal,
+                y: yVal,
+                x: xVal,
+                zBf: "-2",
+                yBf: String(node.right.bf),
+                newSubtreeRoot: yVal,
+                steps: [
+                  `Lowest unbalanced ancestor is <strong>${zVal}</strong> (BF = -2) and its right child <strong>${yVal}</strong> has BF = -1 (Right-Right heavy).`,
+                  `Perform a <strong>Single Left Rotation</strong> around node <strong>${zVal}</strong>.`,
+                  `Node <strong>${yVal}</strong> moves up to replace <strong>${zVal}</strong>; <strong>${zVal}</strong> becomes the left child of <strong>${yVal}</strong>.`,
+                ],
+              };
+              return rotateLeft(node);
+            }
+
+            // Left-Right (+2, -1)
+            if (node.bf > 1 && insertedVal > node.left.val) {
+              const yVal = node.left.val;
+              const xVal = node.left.right.val;
+              rotationInfo = {
+                type: "LR (Left-Right)",
+                shortType: "LR Double Rotation",
+                z: zVal,
+                y: yVal,
+                x: xVal,
+                zBf: "+2",
+                yBf: "-1",
+                newSubtreeRoot: xVal,
+                steps: [
+                  `Lowest unbalanced ancestor is <strong>${zVal}</strong> (BF = +2), while its left child <strong>${yVal}</strong> has BF = -1 (zig-zag Left-Right path to <strong>${xVal}</strong>).`,
+                  `<strong>Step 1:</strong> Left Rotate around left child <strong>${yVal}</strong> so <strong>${xVal}</strong> moves up into ${yVal}'s spot.`,
+                  `<strong>Step 2:</strong> Right Rotate around <strong>${zVal}</strong> so <strong>${xVal}</strong> becomes the new subtree root with <strong>${yVal}</strong> on its left and <strong>${zVal}</strong> on its right.`,
+                ],
+              };
+              node.left = rotateLeft(node.left);
+              return rotateRight(node);
+            }
+
+            // Right-Left (-2, +1)
+            if (node.bf < -1 && insertedVal < node.right.val) {
+              const yVal = node.right.val;
+              const xVal = node.right.left.val;
+              rotationInfo = {
+                type: "RL (Right-Left)",
+                shortType: "RL Double Rotation",
+                z: zVal,
+                y: yVal,
+                x: xVal,
+                zBf: "-2",
+                yBf: "+1",
+                newSubtreeRoot: xVal,
+                steps: [
+                  `Lowest unbalanced ancestor is <strong>${zVal}</strong> (BF = -2), while its right child <strong>${yVal}</strong> has BF = +1 (zig-zag Right-Left path to <strong>${xVal}</strong>).`,
+                  `<strong>Step 1:</strong> Right Rotate around right child <strong>${yVal}</strong> so <strong>${xVal}</strong> moves up into ${yVal}'s spot.`,
+                  `<strong>Step 2:</strong> Left Rotate around <strong>${zVal}</strong> so <strong>${xVal}</strong> becomes the new subtree root with <strong>${zVal}</strong> on its left and <strong>${yVal}</strong> on its right.`,
+                ],
+              };
+              node.right = rotateRight(node.right);
+              return rotateLeft(node);
+            }
+          }
+          return node;
+        }
+
+        const newRoot = helper(root);
+        updateMetrics(newRoot);
+        return { newRoot, rotationInfo };
+      }
+
+      // Build complete timeline of micro-steps from a sequence of numbers
+      let activeDataset = [...INITIAL_DATASET];
+      let timeline = []; // Array of frame objects
+      let majorSummaryRows = []; // 1 row per inserted number
+
+      function buildTimeline(sequence) {
+        const frames = [];
+        const summaryRows = [];
+        let currentRoot = null;
+
+        // Frame 0: Empty tree
+        frames.push({
+          frameIndex: 0,
+          majorIndex: -1,
+          insertedCount: 0,
+          phase: "init",
+          val: null,
+          tree: null,
+          highlightNodes: [],
+          unbalancedNode: null,
+          rotationInfo: null,
+          title: "Step 0: Empty AVL Tree",
+          placementText: "None yet",
+          explanationHtml: `
+          <p>Ready to build the AVL tree from your 13-element sequence:</p>
+          <p class="mono text-xs text-indigo-300 bg-slate-950 p-2 rounded-lg border border-slate-800">${sequence.join(", ")}</p>
+          <p>Click <strong>"Insert First Node (14) →"</strong> or any number chip above to step through BST placement, Balance Factor checks, and rotations.</p>
+        `,
+        });
+
+        sequence.forEach((val, idx) => {
+          let workRoot = cloneTree(currentRoot);
+          let placementDesc = "";
+
+          if (!workRoot) {
+            workRoot = { val, height: 1, bf: 0, left: null, right: null };
+            placementDesc = "Inserted as Root node";
+          } else {
+            const res = bstInsertRaw(workRoot, val, []);
+            placementDesc = `Inserted as ${res.side.toUpperCase()} child of ${res.parentVal}`;
+          }
+          updateMetrics(workRoot);
+
+          // Check if rotation is needed
+          const preRotSnap = cloneTree(workRoot);
+          const { newRoot, rotationInfo } = balanceTreeWithTrace(
+            cloneTree(workRoot),
+            val,
+          );
+
+          if (!rotationInfo) {
+            // Balanced immediately
+            currentRoot = newRoot;
+            frames.push({
+              frameIndex: frames.length,
+              majorIndex: idx,
+              insertedCount: idx + 1,
+              phase: "balanced_insert",
+              val,
+              tree: cloneTree(currentRoot),
+              highlightNodes: [val],
+              unbalancedNode: null,
+              rotationInfo: null,
+              title: `Insert ${val} (${idx + 1} of ${sequence.length}) — Balanced`,
+              placementText: placementDesc,
+              explanationHtml: `
+              <p><strong>1. BST Insertion:</strong> <span class="mono text-amber-300 font-bold">${val}</span> is placed as the <strong>${placementDesc.replace("Inserted as ", "")}</strong> following binary search order.</p>
+              <p><strong>2. Balance Check:</strong> Walking up to the root, every ancestor has <span class="mono text-emerald-400">BF ∈ {-1, 0, +1}</span>. <strong>No rotation is required!</strong></p>
+            `,
+            });
+
+            summaryRows.push({
+              stepNum: idx + 1,
+              val,
+              placement: placementDesc,
+              imbalance: "All |BF| ≤ 1 (Balanced)",
+              rotation: "None",
+              rootAfter: currentRoot.val,
+              targetFrameIndex: frames.length - 1,
+            });
+          } else {
+            // Frame A: Imbalance detected BEFORE rotation
+            frames.push({
+              frameIndex: frames.length,
+              majorIndex: idx,
+              insertedCount: idx + 1,
+              phase: "imbalance_detected",
+              val,
+              tree: preRotSnap,
+              highlightNodes: [val, rotationInfo.y, rotationInfo.x],
+              unbalancedNode: rotationInfo.z,
+              rotationInfo,
+              title: `Insert ${val} (${idx + 1}/${sequence.length}) — Imbalance at Node ${rotationInfo.z}!`,
+              placementText: placementDesc,
+              explanationHtml: `
+              <p><strong>1. BST Insertion:</strong> <span class="mono text-amber-300 font-bold">${val}</span> is placed as the <strong>${placementDesc.replace("Inserted as ", "")}</strong>.</p>
+              <p><strong>2. Imbalance Detected:</strong> Node <span class="mono text-rose-400 font-bold">${rotationInfo.z}</span> now has <span class="mono text-rose-400 font-bold">BF = ${rotationInfo.zBf}</span>! Path from <span class="mono">${rotationInfo.z} → ${rotationInfo.y} → ${rotationInfo.x}</span> forms a <strong>${rotationInfo.type}</strong> case.</p>
+              <p class="text-amber-300 font-medium">Click the primary button to execute the <strong>${rotationInfo.shortType}</strong>!</p>
+            `,
+            });
+
+            // Frame B: AFTER rotation applied
+            currentRoot = newRoot;
+            frames.push({
+              frameIndex: frames.length,
+              majorIndex: idx,
+              insertedCount: idx + 1,
+              phase: "rotation_complete",
+              val,
+              tree: cloneTree(currentRoot),
+              highlightNodes: [rotationInfo.z, rotationInfo.y, rotationInfo.x],
+              unbalancedNode: null,
+              rotationInfo,
+              title: `Rotated (${rotationInfo.shortType}) — Subtree Root is Now ${rotationInfo.newSubtreeRoot}`,
+              placementText: placementDesc,
+              explanationHtml: `
+              <p><strong>${rotationInfo.type} Complete:</strong> Subtree rooted at <span class="mono text-amber-300">${rotationInfo.z}</span> was rotated so <span class="mono text-emerald-400 font-bold">${rotationInfo.newSubtreeRoot}</span> is the new subtree root.</p>
+              <p>All nodes in the tree are back within <span class="mono text-emerald-400">BF ∈ {-1, 0, +1}</span> and BST sorted order is preserved.</p>
+            `,
+            });
+
+            summaryRows.push({
+              stepNum: idx + 1,
+              val,
+              placement: placementDesc,
+              imbalance: `Node ${rotationInfo.z} (BF = ${rotationInfo.zBf})`,
+              rotation: `${rotationInfo.type} (z=${rotationInfo.z}, y=${rotationInfo.y}, x=${rotationInfo.x})`,
+              rootAfter: currentRoot.val,
+              targetFrameIndex: frames.length - 1,
+            });
+          }
+        });
+
+        return { frames, summaryRows };
+      }
+
+      // =========================================================================
+      // 2. UI STATE & RENDERING
+      // =========================================================================
+      let currentFrameIdx = 0;
+      let autoPlayTimer = null;
+
+      const elSequenceContainer = document.getElementById("sequenceContainer");
+      const elProgressBadge = document.getElementById("progressBadge");
+      const elChkPause = document.getElementById("chkPauseBeforeRotate");
+      const elBtnReset = document.getElementById("btnReset");
+      const elBtnPrev = document.getElementById("btnPrev");
+      const elBtnNextPrimary = document.getElementById("btnNextPrimary");
+      const elBtnNextPrimaryLabel = document.getElementById(
+        "btnNextPrimaryLabel",
+      );
+      const elBtnAutoPlay = document.getElementById("btnAutoPlay");
+      const elEdgesLayer = document.getElementById("edgesLayer");
+      const elNodesLayer = document.getElementById("nodesLayer");
+      const elEmptyOverlay = document.getElementById("emptyTreeOverlay");
+      const elStatHeight = document.getElementById("statTreeHeight");
+      const elStatNodes = document.getElementById("statNodeCount");
+      const elTxtInOrder = document.getElementById("txtInOrder");
+      const elTxtPreOrder = document.getElementById("txtPreOrder");
+      const elStepPhasePill = document.getElementById("stepPhasePill");
+      const elRotationTypeBadge = document.getElementById("rotationTypeBadge");
+      const elStepTitle = document.getElementById("stepTitle");
+      const elStepDescription = document.getElementById("stepDescription");
+      const elRotationMechanicBox = document.getElementById(
+        "rotationMechanicBox",
+      );
+      const elRotBoxHeader = document.getElementById("rotBoxHeader");
+      const elRotNodesInvolved = document.getElementById("rotNodesInvolved");
+      const elRotStepList = document.getElementById("rotStepList");
+      const elBfTableBody = document.getElementById("bfTableBody");
+      const elSummaryTableBody = document.getElementById("summaryTableBody");
+
+      function rebuildAll() {
+        const built = buildTimeline(activeDataset);
+        timeline = built.frames;
+        majorSummaryRows = built.summaryRows;
+        if (currentFrameIdx >= timeline.length) {
+          currentFrameIdx = timeline.length - 1;
+        }
+        renderSummaryTable();
+        renderCurrentFrame();
+      }
+
+      // Compute hierarchical layout coordinates for SVG tree
+      function computeCoordinates(root) {
+        const nodes = [];
+        const edges = [];
+        if (!root) return { nodes, edges };
+
+        // Assign x based on inorder rank or recursive horizontal bounds so even deep trees never overlap
+        function walk(node, depth, xMin, xMax) {
+          if (!node) return;
+          const x = (xMin + xMax) / 2;
+          const y = 48 + depth * 74;
+          nodes.push({
+            val: node.val,
+            x,
+            y,
+            height: node.height,
+            bf: node.bf,
+          });
+          if (node.left) {
+            const childX = (xMin + x) / 2;
+            const childY = 48 + (depth + 1) * 74;
+            edges.push({
+              from: node.val,
+              to: node.left.val,
+              x1: x,
+              y1: y,
+              x2: childX,
+              y2: childY,
+              side: "L",
+            });
+            walk(node.left, depth + 1, xMin, x);
+          }
+          if (node.right) {
+            const childX = (x + xMax) / 2;
+            const childY = 48 + (depth + 1) * 74;
+            edges.push({
+              from: node.val,
+              to: node.right.val,
+              x1: x,
+              y1: y,
+              x2: childX,
+              y2: childY,
+              side: "R",
+            });
+            walk(node.right, depth + 1, x, xMax);
+          }
+        }
+
+        walk(root, 0, 35, 825);
+        return { nodes, edges };
+      }
+
+      function getInOrder(node, arr = []) {
+        if (!node) return arr;
+        getInOrder(node.left, arr);
+        arr.push(node.val);
+        getInOrder(node.right, arr);
+        return arr;
+      }
+
+      function getPreOrder(node, arr = []) {
+        if (!node) return arr;
+        arr.push(node.val);
+        getPreOrder(node.left, arr);
+        getPreOrder(node.right, arr);
+        return arr;
+      }
+
+      function renderSequenceChips(frame) {
+        elSequenceContainer.innerHTML = "";
+        activeDataset.forEach((num, idx) => {
+          const isInserted = idx < frame.insertedCount;
+          const isCurrent = idx === frame.majorIndex;
+
+          // Check if this number caused a rotation
+          const rowSummary = majorSummaryRows[idx];
+          const hasRot = rowSummary && rowSummary.rotation !== "None";
+
+          const btn = document.createElement("button");
+          btn.type = "button";
+          let classes =
+            "px-2.5 py-1.5 rounded-xl text-xs font-bold mono transition flex items-center gap-1 border ";
+          if (isCurrent) {
+            if (frame.phase === "imbalance_detected") {
+              classes +=
+                "bg-rose-600 text-white border-rose-400 shadow-lg shadow-rose-600/30 ring-2 ring-rose-400/50";
+            } else {
+              classes +=
+                "bg-indigo-600 text-white border-indigo-400 shadow-lg shadow-indigo-600/30 ring-2 ring-indigo-400/40";
+            }
+          } else if (isInserted) {
+            classes +=
+              "bg-slate-800/90 text-emerald-300 border-emerald-500/30 hover:bg-slate-800";
+          } else if (idx === frame.insertedCount) {
+            classes +=
+              "bg-slate-800 text-amber-300 border-amber-500/40 hover:bg-amber-500/20 animate-pulse";
+          } else {
+            classes +=
+              "bg-slate-950 text-slate-400 border-slate-800 hover:border-slate-700 hover:text-slate-200";
+          }
+          btn.className = classes;
+          btn.innerHTML = `
+          <span>${num}</span>
+          ${hasRot ? `<span class="text-[9px] px-1 rounded bg-black/30 text-amber-300">${rowSummary.rotation.split(" ")[0]}</span>` : ""}
+        `;
+          btn.title = `Jump to insertion of ${num}`;
+          btn.addEventListener("click", () => {
+            stopAutoPlay();
+            // Find the first frame for majorIndex === idx (or if pause-before-rotate is unchecked, final frame for idx)
+            const wantImbalance = elChkPause.checked;
+            const matchingFrames = timeline.filter((f) => f.majorIndex === idx);
+            if (matchingFrames.length > 0) {
+              currentFrameIdx = wantImbalance
+                ? matchingFrames[0].frameIndex
+                : matchingFrames[matchingFrames.length - 1].frameIndex;
+              renderCurrentFrame();
+            }
+          });
+          elSequenceContainer.appendChild(btn);
+        });
+      }
+
+      function renderTreeSvg(frame) {
+        if (!frame.tree) {
+          elEdgesLayer.innerHTML = "";
+          elNodesLayer.innerHTML = "";
+          elEmptyOverlay.classList.remove("hidden");
+          return;
+        }
+        elEmptyOverlay.classList.add("hidden");
+
+        const { nodes, edges } = computeCoordinates(frame.tree);
+
+        // Render Edges
+        elEdgesLayer.innerHTML = edges
+          .map((e) => {
+            const isRotEdge =
+              frame.highlightNodes.includes(e.from) &&
+              frame.highlightNodes.includes(e.to);
+            const strokeColor = isRotEdge ? "#f59e0b" : "#475569";
+            const strokeWidth = isRotEdge ? "3" : "2";
+            return `
+          <g class="edge-line">
+            <line x1="${e.x1}" y1="${e.y1}" x2="${e.x2}" y2="${e.y2}" stroke="${strokeColor}" stroke-width="${strokeWidth}" stroke-linecap="round" />
+          </g>
+        `;
+          })
+          .join("");
+
+        // Render Nodes
+        elNodesLayer.innerHTML = nodes
+          .map((n) => {
+            const isUnbalanced = frame.unbalancedNode === n.val;
+            const isHighlighted = frame.highlightNodes.includes(n.val);
+
+            let fill = "#10b981"; // Emerald balanced
+            let stroke = "#a7f3d0";
+            let filterAttr = "";
+
+            if (isUnbalanced) {
+              fill = "#f43f5e"; // Rose unbalanced
+              stroke = "#fecdd3";
+              filterAttr = 'filter="url(#glow-rose)"';
+            } else if (isHighlighted) {
+              fill = "#f59e0b"; // Amber active
+              stroke = "#fde68a";
+              filterAttr = 'filter="url(#glow-amber)"';
+            }
+
+            const bfFormatted = n.bf > 0 ? `+${n.bf}` : `${n.bf}`;
+            const bfBg =
+              Math.abs(n.bf) > 1
+                ? "#e11d48"
+                : n.bf === 0
+                  ? "#1e293b"
+                  : "#312e81";
+            const bfBorder = Math.abs(n.bf) > 1 ? "#fda4af" : "#64748b";
+
+            return `
+          <g class="node-group" transform="translate(${n.x}, ${n.y})">
+            ${isUnbalanced ? `<circle r="24" fill="none" stroke="#f43f5e" stroke-width="3" class="pulse-circle" />` : ""}
+            <circle r="22" fill="${fill}" stroke="${stroke}" stroke-width="2.5" ${filterAttr} />
+            <text y="5" text-anchor="middle" fill="#ffffff" font-size="14" font-weight="800" class="mono">${n.val}</text>
+
+            <!-- BF Pill above-right of node -->
+            <g transform="translate(18, -20)">
+              <rect x="-16" y="-9" width="32" height="17" rx="6" fill="${bfBg}" stroke="${bfBorder}" stroke-width="1.2" />
+              <text y="3" text-anchor="middle" fill="#f8fafc" font-size="10" font-weight="700" class="mono">${bfFormatted}</text>
+            </g>
+
+            <!-- Height label below node -->
+            <text y="35" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="600" class="mono">h=${n.height}</text>
+          </g>
+        `;
+          })
+          .join("");
+      }
+
+      function renderCurrentFrame() {
+        const frame = timeline[currentFrameIdx];
+        renderSequenceChips(frame);
+        renderTreeSvg(frame);
+
+        elProgressBadge.textContent = `${frame.insertedCount} / ${activeDataset.length} Inserted`;
+
+        // Stats & traversals
+        const inOrderArr = getInOrder(frame.tree);
+        const preOrderArr = getPreOrder(frame.tree);
+        elStatHeight.textContent = frame.tree ? frame.tree.height : 0;
+        elStatNodes.textContent = inOrderArr.length;
+        elTxtInOrder.textContent = inOrderArr.length
+          ? inOrderArr.join(" → ")
+          : "—";
+        elTxtPreOrder.textContent = preOrderArr.length
+          ? preOrderArr.join(" → ")
+          : "—";
+
+        // Step Phase Pill & Rotation Badge
+        if (frame.phase === "init") {
+          elStepPhasePill.textContent = "Ready to Start";
+          elStepPhasePill.className =
+            "text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30";
+          elRotationTypeBadge.classList.add("hidden");
+        } else if (frame.phase === "balanced_insert") {
+          elStepPhasePill.textContent = "BST Insert • Balanced";
+          elStepPhasePill.className =
+            "text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30";
+          elRotationTypeBadge.classList.add("hidden");
+        } else if (frame.phase === "imbalance_detected") {
+          elStepPhasePill.textContent = "⚠️ Imbalance Detected!";
+          elStepPhasePill.className =
+            "text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 animate-pulse";
+          elRotationTypeBadge.textContent = frame.rotationInfo.shortType;
+          elRotationTypeBadge.classList.remove("hidden");
+        } else if (frame.phase === "rotation_complete") {
+          elStepPhasePill.textContent = "✓ Rebalanced via Rotation";
+          elStepPhasePill.className =
+            "text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/40";
+          elRotationTypeBadge.textContent = frame.rotationInfo.shortType;
+          elRotationTypeBadge.classList.remove("hidden");
+        }
+
+        elStepTitle.textContent = frame.title;
+        elStepDescription.innerHTML = frame.explanationHtml;
+
+        // Rotation Mechanic Box
+        if (frame.rotationInfo) {
+          elRotationMechanicBox.classList.remove("hidden");
+          elRotBoxHeader.textContent = `${frame.rotationInfo.type} Breakdown`;
+          elRotNodesInvolved.textContent = `z=${frame.rotationInfo.z}, y=${frame.rotationInfo.y}, x=${frame.rotationInfo.x}`;
+          elRotStepList.innerHTML = frame.rotationInfo.steps
+            .map(
+              (s) =>
+                `<div class="flex items-start gap-1.5"><span class="text-indigo-400">•</span><span>${s}</span></div>`,
+            )
+            .join("");
+        } else {
+          elRotationMechanicBox.classList.add("hidden");
+        }
+
+        // Balance Factor Table
+        const { nodes } = computeCoordinates(frame.tree);
+        if (nodes.length === 0) {
+          elBfTableBody.innerHTML = `<tr><td colspan="5" class="py-4 text-center text-slate-500 font-sans">Insert a node to inspect balance factors</td></tr>`;
+        } else {
+          // Find left/right heights for each node
+          const nodeMap = {};
+          function collectNodeObjs(n) {
+            if (!n) return;
+            nodeMap[n.val] = n;
+            collectNodeObjs(n.left);
+            collectNodeObjs(n.right);
+          }
+          collectNodeObjs(frame.tree);
+
+          const sortedNodes = [...nodes].sort((a, b) => a.val - b.val);
+          elBfTableBody.innerHTML = sortedNodes
+            .map((n) => {
+              const raw = nodeMap[n.val];
+              const hl = raw.left ? raw.left.height : 0;
+              const hr = raw.right ? raw.right.height : 0;
+              const bfStr = n.bf > 0 ? `+${n.bf}` : `${n.bf}`;
+              const isUnbal = Math.abs(n.bf) > 1;
+              return `
+            <tr class="${isUnbal ? "bg-rose-950/60 text-rose-200 font-bold" : "text-slate-300"}">
+              <td class="py-1.5 px-2.5 font-bold">${n.val}</td>
+              <td class="py-1.5 px-2">${hl}</td>
+              <td class="py-1.5 px-2">${hr}</td>
+              <td class="py-1.5 px-2 ${isUnbal ? "text-rose-400" : n.bf === 0 ? "text-slate-400" : "text-indigo-300"}">${bfStr}</td>
+              <td class="py-1.5 px-2.5 font-sans text-[11px]">
+                ${
+                  isUnbal
+                    ? `<span class="px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/40">Unbalanced!</span>`
+                    : `<span class="text-emerald-400">Balanced</span>`
+                }
+              </td>
+            </tr>
+          `;
+            })
+            .join("");
+        }
+
+        // Update Prev / Next Buttons
+        elBtnPrev.disabled = currentFrameIdx === 0;
+
+        if (currentFrameIdx >= timeline.length - 1) {
+          elBtnNextPrimaryLabel.textContent =
+            "✓ All 13 Elements Inserted (Click Reset to Replay)";
+          elBtnNextPrimary.className =
+            "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-emerald-600/30 text-emerald-200 border border-emerald-500/40 transition flex items-center gap-2";
+        } else {
+          const nextFrame = timeline[currentFrameIdx + 1];
+          if (frame.phase === "imbalance_detected") {
+            elBtnNextPrimaryLabel.textContent = `⚡ Perform ${frame.rotationInfo.shortType} Around ${frame.rotationInfo.z} →`;
+            elBtnNextPrimary.className =
+              "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-rose-600 to-amber-600 hover:from-rose-500 hover:to-amber-500 text-white shadow-lg shadow-rose-600/30 transition flex items-center gap-2";
+          } else {
+            elBtnNextPrimaryLabel.textContent = `Insert Next Node (${nextFrame.val}) →`;
+            elBtnNextPrimary.className =
+              "px-4 py-2 rounded-xl text-xs sm:text-sm font-bold bg-gradient-to-r from-indigo-600 to-cyan-600 hover:from-indigo-500 hover:to-cyan-500 text-white shadow-lg shadow-indigo-600/25 transition flex items-center gap-2";
+          }
+        }
+      }
+
+      function stepForward() {
+        if (currentFrameIdx >= timeline.length - 1) {
+          stopAutoPlay();
+          return;
+        }
+        const nextFrame = timeline[currentFrameIdx + 1];
+        if (
+          !elChkPause.checked &&
+          nextFrame.phase === "imbalance_detected" &&
+          currentFrameIdx + 2 < timeline.length
+        ) {
+          currentFrameIdx += 2;
+        } else {
+          currentFrameIdx += 1;
+        }
+        renderCurrentFrame();
+      }
+
+      function stepBackward() {
+        if (currentFrameIdx <= 0) return;
+        const prevFrame = timeline[currentFrameIdx - 1];
+        if (
+          !elChkPause.checked &&
+          prevFrame.phase === "imbalance_detected" &&
+          currentFrameIdx - 2 >= 0
+        ) {
+          currentFrameIdx -= 2;
+        } else {
+          currentFrameIdx -= 1;
+        }
+        renderCurrentFrame();
+      }
+
+      function stopAutoPlay() {
+        if (autoPlayTimer) {
+          clearInterval(autoPlayTimer);
+          autoPlayTimer = null;
+        }
+        elBtnAutoPlay.textContent = "▶ Auto-Play";
+        elBtnAutoPlay.className =
+          "px-3 py-2 rounded-xl text-xs font-semibold bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-300 border border-emerald-500/30 transition";
+      }
+
+      function toggleAutoPlay() {
+        if (autoPlayTimer) {
+          stopAutoPlay();
+          return;
+        }
+        if (currentFrameIdx >= timeline.length - 1) {
+          currentFrameIdx = 0;
+          renderCurrentFrame();
+        }
+        elBtnAutoPlay.textContent = "⏸ Pause";
+        elBtnAutoPlay.className =
+          "px-3 py-2 rounded-xl text-xs font-semibold bg-amber-600/30 text-amber-200 border border-amber-500/40 transition";
+        autoPlayTimer = setInterval(() => {
+          if (currentFrameIdx >= timeline.length - 1) {
+            stopAutoPlay();
+          } else {
+            stepForward();
+          }
+        }, 1350);
+      }
+
+      function renderSummaryTable() {
+        elSummaryTableBody.innerHTML = majorSummaryRows
+          .map((r) => {
+            const hasRot = r.rotation !== "None";
+            return `
+          <tr class="hover:bg-slate-800/50 transition">
+            <td class="py-2.5 px-3 mono text-slate-400">${r.stepNum}</td>
+            <td class="py-2.5 px-3 mono font-bold text-white">${r.val}</td>
+            <td class="py-2.5 px-3 text-slate-300">${r.placement}</td>
+            <td class="py-2.5 px-3 ${hasRot ? "text-rose-300 font-semibold" : "text-emerald-400"}">${r.imbalance}</td>
+            <td class="py-2.5 px-3">
+              ${
+                hasRot
+                  ? `<span class="px-2 py-0.5 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30 font-semibold mono text-[11px]">${r.rotation}</span>`
+                  : `<span class="text-slate-500">None</span>`
+              }
+            </td>
+            <td class="py-2.5 px-3 mono text-indigo-300 font-bold">${r.rootAfter}</td>
+            <td class="py-2.5 px-3 text-right">
+              <button data-jump="${r.targetFrameIndex}" class="jump-step-btn px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-indigo-600 text-slate-200 hover:text-white text-xs font-semibold transition border border-slate-700">
+                Inspect →
+              </button>
+            </td>
+          </tr>
+        `;
+          })
+          .join("");
+
+        document.querySelectorAll(".jump-step-btn").forEach((btn) => {
+          btn.addEventListener("click", () => {
+            stopAutoPlay();
+            currentFrameIdx = parseInt(btn.getAttribute("data-jump"), 10);
+            switchTab("visualizer");
+            renderCurrentFrame();
+          });
+        });
+      }
+
+      // Tabs switching
+      const tabBtnVisualizer = document.getElementById("tabBtnVisualizer");
+      const tabBtnGuide = document.getElementById("tabBtnGuide");
+      const tabBtnLog = document.getElementById("tabBtnLog");
+      const viewVisualizer = document.getElementById("viewVisualizer");
+      const viewGuide = document.getElementById("viewGuide");
+      const viewLog = document.getElementById("viewLog");
+
+      function switchTab(tab) {
+        viewVisualizer.classList.toggle("hidden", tab !== "visualizer");
+        viewGuide.classList.toggle("hidden", tab !== "guide");
+        viewLog.classList.toggle("hidden", tab !== "log");
+
+        tabBtnVisualizer.className =
+          tab === "visualizer"
+            ? "px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow"
+            : "px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white";
+        tabBtnGuide.className =
+          tab === "guide"
+            ? "px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow"
+            : "px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white";
+        tabBtnLog.className =
+          tab === "log"
+            ? "px-3 py-1.5 rounded-lg text-xs font-semibold transition bg-indigo-600 text-white shadow"
+            : "px-3 py-1.5 rounded-lg text-xs font-semibold transition text-slate-300 hover:text-white";
+      }
+
+      tabBtnVisualizer.addEventListener("click", () => switchTab("visualizer"));
+      tabBtnGuide.addEventListener("click", () => switchTab("guide"));
+      tabBtnLog.addEventListener("click", () => switchTab("log"));
+
+      elBtnReset.addEventListener("click", () => {
+        stopAutoPlay();
+        activeDataset = [...INITIAL_DATASET];
+        currentFrameIdx = 0;
+        rebuildAll();
+      });
+
+      elBtnPrev.addEventListener("click", () => {
+        stopAutoPlay();
+        stepBackward();
+      });
+
+      elBtnNextPrimary.addEventListener("click", () => {
+        stopAutoPlay();
+        if (currentFrameIdx >= timeline.length - 1) {
+          currentFrameIdx = 0;
+          renderCurrentFrame();
+        } else {
+          stepForward();
+        }
+      });
+
+      elBtnAutoPlay.addEventListener("click", () => {
+        toggleAutoPlay();
+      });
+
+      document
+        .getElementById("customInsertForm")
+        .addEventListener("submit", (e) => {
+          e.preventDefault();
+          stopAutoPlay();
+          const input = document.getElementById("customValInput");
+          const val = parseInt(input.value, 10);
+          if (isNaN(val)) return;
+          if (!activeDataset.includes(val)) {
+            activeDataset.push(val);
+            rebuildAll();
+            currentFrameIdx = timeline.length - 1;
+            renderCurrentFrame();
+          }
+          input.value = "";
+        });
+
+      // Keyboard arrow support
+      window.addEventListener("keydown", (e) => {
+        if (e.target.tagName === "INPUT") return;
+        if (e.key === "ArrowRight") {
+          stopAutoPlay();
+          stepForward();
+        } else if (e.key === "ArrowLeft") {
+          stopAutoPlay();
+          stepBackward();
+        }
+      });
+
+      // Initialize on load
+      rebuildAll();
+    </script>
+  </body>
+</html>
