@@ -4,7 +4,7 @@ using namespace std;
 int main()
 {
 
-    int arr[5] = {5, 2, 9, 1, 5};
+    int arr[5] = {55, 32, 23, 88, 12};
     int n = sizeof(arr) / sizeof(int);
 
     for (int i = 1; i < n; i++)
@@ -18,6 +18,11 @@ int main()
             j--;
         }
         arr[j + 1] = key;
+    }
+
+    for (int value : arr)
+    {
+        cout << value << " ";
     }
     return 0;
 }
