@@ -36,6 +36,18 @@ public:
         top = newNode;
     }
 
+    void pop()
+    {
+        if (top == NULL)
+        {
+            cout << "Stack is empty" << endl;
+            return;
+        }
+        Node *temp = top;
+        top = top->next;
+        delete temp;
+    }
+
     void display()
     {
         if (top == NULL)
@@ -61,6 +73,9 @@ int main()
     s.push(10);
     s.push(20);
     s.push(30);
+    s.display();
+
+    s.pop();
     s.display();
 
     return 0;
