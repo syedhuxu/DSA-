@@ -25,6 +25,18 @@ public:
             cout << x << " pushed into stack" << endl;
         }
     }
+
+    void pop()
+    {
+        if (top < 0)
+        {
+            cout << "Stack Underflow" << endl;
+        }
+        else
+        {
+            cout << arr[top--] << " popped from stack" << endl;
+        }
+    }
 };
 
 int main()
@@ -34,5 +46,6 @@ int main()
     s.push(20);
     s.push(30);
 
+    s.pop();
     return 0;
 }
