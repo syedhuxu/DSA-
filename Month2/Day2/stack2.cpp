@@ -48,6 +48,21 @@ public:
         delete temp;
     }
 
+    bool isEmpty()
+    {
+        return top == NULL;
+    }
+
+    void peek()
+    {
+        if (top == NULL)
+        {
+            cout << "Stack is empty" << endl;
+            return;
+        }
+        cout << "Top element is: " << top->data << endl;
+    }
+
     void display()
     {
         if (top == NULL)
@@ -78,5 +93,8 @@ int main()
     s.pop();
     s.display();
 
+    s.peek();
+    cout << "Is stack empty? " << (s.isEmpty() ? "Yes" : "No") << endl;
+    s.display();
     return 0;
 }
