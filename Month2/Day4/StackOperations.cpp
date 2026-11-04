@@ -1,38 +1,56 @@
 #include <iostream>
-using namespace std;
 #include <stack>
+#include <string>
 
-int main()
+using namespace std;
+
+bool isBalanced(string str)
 {
-    // Parentheses Checker
+    stack<char> st;
 
-    bool isBalanced(string str)
+    for (char ch : str)
     {
-
-        stack<char> st;
-
-        for (char ch : str)
+        if (ch == '(' || ch == '{' || ch == '[')
         {
-            if (ch == ')' || ch == '{' || ch == '[')
+            st.push(ch);
+        }
+        else if (ch == ')' || ch == '}' || ch == ']')
+        {
+
+            if (st.empty())
             {
-                st.push(ch);
+                return false;
+            }
+
+            char top = st.top();
+
+            if ((ch == ')' && top == '(') ||
+                (ch == '}' && top == '{') ||
+                (ch == ']' && top == '['))
+            {
+                st.pop();
             }
             else
             {
-                if (st.empty())
-                {
-                    return false;
-                }
-                char top = st.top();
-                if ((ch == ')' || ch == '}' || ch == ']'))
-                {
-                    st.pop();
-                }
+                return false;
             }
         }
-        return st.empty();
+    }
+    return st.empty();
+}
+
+int main()
+{
+    string testStr = "{[()]}";
+
+    if (isBalanced(testStr))
+    {
+        cout << testStr << " is Balanced\n";
+    }
+    else
+    {
+        cout << testStr << " is NOT Balanced\n";
     }
 
-    cout << "Hello World";
     return 0;
 }
