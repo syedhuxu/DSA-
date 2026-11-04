@@ -3,7 +3,7 @@
 #include <string>
 
 using namespace std;
-
+// Balanced Parentheses
 bool isBalanced(string str)
 {
     stack<char> st;
