@@ -48,7 +48,7 @@ int evaluatePostfix(string postfixExp)
 int main()
 {
 
-    string postfixExp = "6 3 2 * + 8 2 / -";
+    string postfixExp = "6 44 2 * + 8 2 / -";
 
     cout << "Postfix Expression: " << postfixExp << endl;
 
